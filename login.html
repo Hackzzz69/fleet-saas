@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FleetDesk — Sign in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="header">
+  <h1><a href="index.html">🚛 FleetDesk</a></h1>
+</header>
+
+<div class="auth-box">
+  <h2 id="title">Sign in</h2>
+  <div id="signupFields" style="display:none">
+    <input type="text" id="fullName" placeholder="Full name">
+    <input type="text" id="orgName" placeholder="Fleet / company name">
+  </div>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="submitBtn">Sign in</button>
+  <p class="note" style="margin-top:14px">
+    <a href="#" id="toggleMode">Need an account? Sign up</a>
+  </p>
+  <p class="error" id="error"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  let mode = params.get("mode") === "signup" ? "signup" : "signin";
+
+  const title = document.getElementById("title");
+  const signupFields = document.getElementById("signupFields");
+  const submitBtn = document.getElementById("submitBtn");
+  const toggleMode = document.getElementById("toggleMode");
+  const errorEl = document.getElementById("error");
+
+  function render() {
+    const up = mode === "signup";
+    title.textContent = up ? "Create your fleet account" : "Sign in";
+    signupFields.style.display = up ? "" : "none";
+    submitBtn.textContent = up ? "Create account" : "Sign in";
+    toggleMode.textContent = up ? "Have an account? Sign in" : "Need an account? Sign up";
+  }
+  toggleMode.onclick = e => {
+    e.preventDefault();
+    mode = mode === "signup" ? "signin" : "signup";
+    render();
+  };
+  render();
+
+  submitBtn.onclick = async () => {
+    errorEl.textContent = "";
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    let res;
+    if (mode === "signup") {
+      const fullName = document.getElementById("fullName").value.trim();
+      const orgName = document.getElementById("orgName").value.trim();
+      res = await signUp(email, password, fullName, orgName);
+    } else {
+      res = await signIn(email, password);
+    }
+    if (res.error) { errorEl.textContent = res.error.message; return; }
+    window.location.href = "app.html";
+  };
+
+  // already signed in?
+  currentUser().then(u => { if (u) window.location.href = "app.html"; });
+</script>
+
+</body>
+</html>

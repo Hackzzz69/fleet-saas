@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FleetDesk — App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="header">
+  <h1>🚛 FleetDesk</h1>
+  <div class="controls">
+    <select id="orgSelect" title="Fleet"></select>
+    <select id="yearSelect" title="Year"></select>
+    <select id="quarterSelect" title="Quarter">
+      <option value="ALL">All quarters</option>
+      <option value="Q1">Q1</option><option value="Q2">Q2</option>
+      <option value="Q3">Q3</option><option value="Q4">Q4</option>
+    </select>
+    <select id="truckSelect" title="Truck"><option value="ALL">All trucks</option></select>
+    <span class="note" id="userEmail"></span>
+    <button class="ghost small" id="signOutBtn">Sign out</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="dashboard">Dashboard</div>
+    <div class="tab" data-tab="trips">Trips</div>
+    <div class="tab" data-tab="fuel">Fuel</div>
+    <div class="tab" data-tab="trucks">Trucks</div>
+    <div class="tab" data-tab="ifta">IFTA Calculator</div>
+    <div class="tab" data-tab="filings">Filings</div>
+  </div>
+  <div id="content"><p class="note">Loading…</p></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ifta.js"></script>
+<script src="js/app-ui.js"></script>
+
+</body>
+</html>
