@@ -16,41 +16,61 @@ const fmtN = (n, d = 1) => Number(n || 0).toLocaleString(undefined,
 /* ---------- init ---------- */
 
 async function init() {
-  S.user = await requireUser();
-  $("userEmail").textContent = S.user.email;
-  $("signOutBtn").onclick = signOut;
+  const c = $("content");
+  try {
+    if (typeof supabase === "undefined" || typeof FLEETDESK_CONFIG === "undefined")
+      throw new Error("The app couldn't start (missing files). Pull to refresh — if it persists, your connection may be blocking the site's scripts.");
 
-  S.orgs = await myOrgs();
-  const orgSel = $("orgSelect");
-  orgSel.innerHTML = S.orgs.map(o =>
-    `<option value="${o.id}">${esc(o.name)} (${o.plan})</option>`).join("");
-  if (!activeOrgId() || !S.orgs.some(o => o.id === activeOrgId()))
-    setActiveOrgId(S.orgs[0].id);
-  orgSel.value = activeOrgId();
-  orgSel.onchange = () => { setActiveOrgId(orgSel.value); S.cache = {}; render(); };
+    S.user = await requireUser();
+    $("userEmail").textContent = S.user.email;
+    $("signOutBtn").onclick = signOut;
 
-  // year options from current year down to 2020
-  const y = new Date().getFullYear();
-  const years = [];
-  for (let i = y; i >= 2020; i--) years.push(i);
-  $("yearSelect").innerHTML =
-    `<option value="ALL">All years</option>` +
-    years.map(v => `<option>${v}</option>`).join("");
-  $("yearSelect").onchange = e => { S.year = e.target.value; S.cache = {}; render(); };
-  $("quarterSelect").onchange = e => { S.quarter = e.target.value; S.cache = {}; render(); };
-  $("truckSelect").onchange = e => { S.truckId = e.target.value; S.cache = {}; render(); };
+    S.orgs = await myOrgs();
+    if (!S.orgs.length) {
+      // Self-heal: the signup trigger sometimes doesn't run (or the user
+      // signed up before it existed). Create the personal org on demand.
+      const { error } = await supabase.rpc("ensure_personal_org");
+      if (error) throw error;
+      S.orgs = await myOrgs();
+    }
+    if (!S.orgs.length)
+      throw new Error("Your fleet couldn't be set up. Check your connection and retry.");
 
-  document.querySelectorAll("#tabs .tab").forEach(t => {
-    t.onclick = () => {
-      document.querySelectorAll("#tabs .tab").forEach(x => x.classList.remove("active"));
-      t.classList.add("active");
-      S.tab = t.dataset.tab;
-      render();
-    };
-  });
+    const orgSel = $("orgSelect");
+    orgSel.innerHTML = S.orgs.map(o =>
+      `<option value="${o.id}">${esc(o.name)} (${o.plan})</option>`).join("");
+    if (!activeOrgId() || !S.orgs.some(o => o.id === activeOrgId()))
+      setActiveOrgId(S.orgs[0].id);
+    orgSel.value = activeOrgId();
+    orgSel.onchange = () => { setActiveOrgId(orgSel.value); S.cache = {}; render(); };
 
-  await refreshTrucks();
-  render();
+    // year options from current year down to 2020
+    const y = new Date().getFullYear();
+    const years = [];
+    for (let i = y; i >= 2020; i--) years.push(i);
+    $("yearSelect").innerHTML =
+      `<option value="ALL">All years</option>` +
+      years.map(v => `<option>${v}</option>`).join("");
+    $("yearSelect").onchange = e => { S.year = e.target.value; S.cache = {}; render(); };
+    $("quarterSelect").onchange = e => { S.quarter = e.target.value; S.cache = {}; render(); };
+    $("truckSelect").onchange = e => { S.truckId = e.target.value; S.cache = {}; render(); };
+
+    document.querySelectorAll("#tabs .tab").forEach(t => {
+      t.onclick = () => {
+        document.querySelectorAll("#tabs .tab").forEach(x => x.classList.remove("active"));
+        t.classList.add("active");
+        S.tab = t.dataset.tab;
+        render();
+      };
+    });
+
+    await refreshTrucks();
+    render();
+  } catch (e) {
+    c.innerHTML = `<div class="card"><h2>Couldn't load your fleet</h2>
+      <p class="error">${esc(e.message)}</p>
+      <button onclick="location.reload()">Retry</button></div>`;
+  }
 }
 
 async function refreshTrucks() {
