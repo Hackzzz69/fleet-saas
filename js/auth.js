@@ -31,7 +31,7 @@ async function signOut() {
 
 /* Orgs the user belongs to, with their role. */
 async function myOrgs() {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("org_members")
     .select("role, orgs(id, name, plan)")
     .order("created_at", { ascending: true });
