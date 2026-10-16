@@ -1,7 +1,7 @@
 /* Auth helpers: sign up / in / out, session guard, profile + orgs. */
 
 async function currentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await sb.auth.getUser();
   return user;
 }
 
@@ -12,7 +12,7 @@ async function requireUser(redirectTo = "login.html") {
 }
 
 async function signUp(email, password, fullName, orgName) {
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await sb.auth.signUp({
     email, password,
     options: { data: { full_name: fullName, org_name: orgName } },
   });
@@ -20,12 +20,12 @@ async function signUp(email, password, fullName, orgName) {
 }
 
 async function signIn(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
   return { data, error };
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   window.location.href = "index.html";
 }
 

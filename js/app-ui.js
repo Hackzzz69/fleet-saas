@@ -18,7 +18,7 @@ const fmtN = (n, d = 1) => Number(n || 0).toLocaleString(undefined,
 async function init() {
   const c = $("content");
   try {
-    if (typeof supabase === "undefined" || typeof FLEETDESK_CONFIG === "undefined")
+    if (typeof sb === "undefined" || typeof FLEETDESK_CONFIG === "undefined")
       throw new Error("The app couldn't start (missing files). Pull to refresh — if it persists, your connection may be blocking the site's scripts.");
 
     S.user = await requireUser();
@@ -29,7 +29,7 @@ async function init() {
     if (!S.orgs.length) {
       // Self-heal: the signup trigger sometimes doesn't run (or the user
       // signed up before it existed). Create the personal org on demand.
-      const { error } = await supabase.rpc("ensure_personal_org");
+      const { error } = await sb.rpc("ensure_personal_org");
       if (error) throw error;
       S.orgs = await myOrgs();
     }

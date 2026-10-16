@@ -5,24 +5,24 @@ const DB = {
 
   /* ---------- trucks ---------- */
   async trucks() {
-    const { data, error } = await supabase.from("trucks")
+    const { data, error } = await sb.from("trucks")
       .select("*").eq("org_id", this.orgId()).order("unit_number");
     if (error) throw error; return data;
   },
   async addTruck(t) {
-    const { data, error } = await supabase.from("trucks")
+    const { data, error } = await sb.from("trucks")
       .insert({ ...t, org_id: this.orgId() }).select().single();
     if (error) throw error; return data;
   },
   async deleteTruck(id) {
-    const { error } = await supabase.from("trucks")
+    const { error } = await sb.from("trucks")
       .delete().eq("id", id).eq("org_id", this.orgId());
     if (error) throw error;
   },
 
   /* ---------- trips ---------- */
   async trips({ year, quarter, truckId } = {}) {
-    let q = supabase.from("trips").select("*").eq("org_id", this.orgId());
+    let q = sb.from("trips").select("*").eq("org_id", this.orgId());
     if (truckId && truckId !== "ALL") q = q.eq("truck_id", truckId);
     const qmap = { Q1: [1, 3], Q2: [4, 6], Q3: [7, 9], Q4: [10, 12] };
     if (year && year !== "ALL" && qmap[quarter]) {
@@ -39,20 +39,20 @@ const DB = {
   },
   async addTrip(t) {
     const user = await currentUser();
-    const { data, error } = await supabase.from("trips")
+    const { data, error } = await sb.from("trips")
       .insert({ ...t, org_id: this.orgId(), created_by: user.id })
       .select().single();
     if (error) throw error; return data;
   },
   async deleteTrip(id) {
-    const { error } = await supabase.from("trips")
+    const { error } = await sb.from("trips")
       .delete().eq("id", id).eq("org_id", this.orgId());
     if (error) throw error;
   },
 
   /* ---------- fuel ---------- */
   async fuel({ year, quarter, truckId } = {}) {
-    let q = supabase.from("fuel_purchases").select("*").eq("org_id", this.orgId());
+    let q = sb.from("fuel_purchases").select("*").eq("org_id", this.orgId());
     if (truckId && truckId !== "ALL") q = q.eq("truck_id", truckId);
     const qmap = { Q1: [1, 3], Q2: [4, 6], Q3: [7, 9], Q4: [10, 12] };
     if (year && year !== "ALL" && qmap[quarter]) {
@@ -69,20 +69,20 @@ const DB = {
   },
   async addFuel(f) {
     const user = await currentUser();
-    const { data, error } = await supabase.from("fuel_purchases")
+    const { data, error } = await sb.from("fuel_purchases")
       .insert({ ...f, org_id: this.orgId(), created_by: user.id })
       .select().single();
     if (error) throw error; return data;
   },
   async deleteFuel(id) {
-    const { error } = await supabase.from("fuel_purchases")
+    const { error } = await sb.from("fuel_purchases")
       .delete().eq("id", id).eq("org_id", this.orgId());
     if (error) throw error;
   },
 
   /* ---------- filings ---------- */
   async filings(year) {
-    let q = supabase.from("ifta_filings").select("*").eq("org_id", this.orgId());
+    let q = sb.from("ifta_filings").select("*").eq("org_id", this.orgId());
     if (year && year !== "ALL") q = q.eq("year", Number(year));
     const { data, error } = await q.order("year", { ascending: false })
       .order("quarter", { ascending: false });
@@ -90,14 +90,14 @@ const DB = {
   },
   async saveFiling(f) {
     const user = await currentUser();
-    const { data, error } = await supabase.from("ifta_filings")
+    const { data, error } = await sb.from("ifta_filings")
       .upsert({ ...f, org_id: this.orgId(), created_by: user.id },
         { onConflict: "org_id,year,quarter" })
       .select().single();
     if (error) throw error; return data;
   },
   async markFiled(id) {
-    const { error } = await supabase.from("ifta_filings")
+    const { error } = await sb.from("ifta_filings")
       .update({ status: "filed", filed_at: new Date().toISOString() })
       .eq("id", id).eq("org_id", this.orgId());
     if (error) throw error;
